@@ -1,9 +1,9 @@
 ## Plan: Terminal 3D Snake
 
-Build a small, modular Python 3.12 application managed with Poetry where the game rules are independent from terminal I/O. The recommended design keeps the renderer behind a narrow interface so ANSI terminal rendering can be swapped later for another frontend without changing the core engine. The authoritative board representation should be a 3D NumPy array, with a small amount of supplemental state kept for efficient movement and collision handling.
+Build a small, modular Python 3.14 application managed with Poetry where the game rules are independent from terminal I/O. The recommended design keeps the renderer behind a narrow interface so ANSI terminal rendering can be swapped later for another frontend without changing the core engine. The authoritative board representation should be a 3D NumPy array, with a small amount of supplemental state kept for efficient movement and collision handling.
 
 **Steps**
-1. Phase 1 - Bootstrap project structure: initialize a Poetry project targeting Python 3.12, define the package layout under c:\Users\Rami\Documents\Snake3D\src\snake3d, and add runtime dependencies needed for numeric state management and reliable ANSI behavior on Windows.
+1. Phase 1 - Bootstrap project structure: initialize a Poetry project targeting Python 3.14, define the package layout under c:\Users\Rami\Documents\Snake3D\src\snake3d, and add runtime dependencies needed for numeric state management and reliable ANSI behavior on Windows.
 2. Phase 1 - Define the domain model in the core package: represent the world as a 3D NumPy array with fixed cell codes for empty space, snake head, snake body, and food; define immutable coordinate and direction types; define a configuration object for board dimensions, tick rate, and control mapping.
 3. Phase 1 - Add supplemental state alongside the 3D array: keep the snake body as an ordered deque of coordinates, track the current movement vector, maintain the current food coordinate, and store game status such as score and terminal game-over state. This avoids scanning the entire array each tick while preserving the array as the source of board occupancy.
 4. Phase 2 - Implement the game state transition layer: create pure update logic that accepts the current state plus an input direction and produces the next state by moving the head, clearing or preserving the tail, resolving food consumption, spawning new food, and detecting wall or self collisions. This step blocks the engine and renderer work because they depend on a stable state API.
@@ -38,7 +38,7 @@ Build a small, modular Python 3.12 application managed with Poetry where the gam
 5. Confirm the displayed board stays synchronized with the NumPy array and the internal snake deque after repeated growth and collision scenarios.
 
 **Decisions**
-- Included: Python 3.12, Poetry-based dependency management, ANSI terminal control, 3D NumPy board storage, and renderer decoupling.
+- Included: Python 3.14, Poetry-based dependency management, ANSI terminal control, 3D NumPy board storage, and renderer decoupling.
 - Included: a supplemental deque for snake ordering because the NumPy array alone is inefficient for tail updates and body traversal.
 - Included: a ports-and-adapters style split so the terminal frontend can be replaced later.
 - Excluded for initial scope: sound, persistent scores, AI/autoplay, multiplayer, and advanced CLI configuration.
