@@ -2,9 +2,6 @@ import sys
 from dataclasses import dataclass
 from typing import TextIO
 
-from colorama import just_fix_windows_console
-
-
 from snake3d.adapters.terminal_size import detect_terminal_size
 from snake3d.core.models import CellValue, Coord, GameConfig
 from snake3d.core.state import GameState, board_index
@@ -73,7 +70,6 @@ class TerminalRenderer:
         self._initialized = False
 
     def initialize(self) -> None:
-        just_fix_windows_console()
         self.stream.write(HIDE_CURSOR + CLEAR + HOME)
         self.stream.flush()
         self._initialized = True
