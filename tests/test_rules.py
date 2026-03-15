@@ -57,7 +57,7 @@ def test_step_state_grows_and_respawns_food_deterministically() -> None:
     assert is_state_synchronized(next_state, config)
 
 
-def test_step_state_detects_wall_collision() -> None:
+def test_step_state_wraps_at_grid_edges() -> None:
     config = GameConfig(width=4, height=4, depth=4)
     state = create_state(
         config,
@@ -68,7 +68,9 @@ def test_step_state_detects_wall_collision() -> None:
 
     next_state = step_state(state, config, RIGHT, random.Random(1))
 
-    assert next_state.is_game_over is True
+    assert next_state.is_game_over is False
+    assert next_state.head == Coord(0, 1, 1)
+    assert is_state_synchronized(next_state, config)
 
 
 def test_step_state_detects_self_collision() -> None:

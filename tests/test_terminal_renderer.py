@@ -32,7 +32,7 @@ def test_renderer_shows_three_slice_window_and_level_bar() -> None:
     assert "Snake3D" in frame
 
 
-def test_renderer_uses_gray_placeholder_panels_for_missing_slices() -> None:
+def test_renderer_wraps_adjacent_panels_at_depth_edges() -> None:
     config = GameConfig(width=8, height=8, depth=8)
     state = create_state(
         config,
@@ -44,8 +44,10 @@ def test_renderer_uses_gray_placeholder_panels_for_missing_slices() -> None:
 
     frame = renderer.build_frame(state)
 
-    assert "z=--" in frame
-    assert "\x1b[90m" in frame
+    assert "z=7" in frame
+    assert "z=0" in frame
+    assert "z=1" in frame
+    assert "z=--" not in frame
     assert "0 |#|" in frame
 
 

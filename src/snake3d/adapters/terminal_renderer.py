@@ -11,7 +11,6 @@ from snake3d.core.state import GameState, board_index
 
 RESET = "\x1b[0m"
 DIM = "\x1b[2m"
-GRAY = "\x1b[90m"
 GREEN = "\x1b[32m"
 BRIGHT_GREEN = "\x1b[92m"
 RED = "\x1b[31m"
@@ -45,18 +44,11 @@ class TerminalRenderer:
             return f"{RED}*{RESET}"
         return f"{DIM}.{RESET}"
 
-    def _panel_label(self, z_level: int | None) -> str:
-        return f"z={z_level}" if z_level is not None else "z=--"
+    def _panel_label(self, z_level: int) -> str:
+        return f"z={z_level}"
 
-    def _panel_lines(self, state: GameState, z_level: int | None) -> list[str]:
+    def _panel_lines(self, state: GameState, z_level: int) -> list[str]:
         lines = [self._panel_label(z_level)]
-        if z_level is None:
-            placeholder = " ".join(["."] * self.config.width)
-            lines.extend(
-                [f"{GRAY}{placeholder}{RESET}" for _ in range(self.config.height)]
-            )
-            return lines
-
         for y in range(self.config.height):
             cells = [
                 self._render_cell(Coord(x, y, z_level), state)
@@ -84,10 +76,10 @@ class TerminalRenderer:
             )
 
         current_z = state.head.z
-        panel_levels: list[int | None] = [
-            current_z - 1 if current_z - 1 >= 0 else None,
+        panel_levels: list[int] = [
+            (current_z - 1) % self.config.depth,
             current_z,
-            current_z + 1 if current_z + 1 < self.config.depth else None,
+            (current_z + 1) % self.config.depth,
         ]
         panels = [self._panel_lines(state, level) for level in panel_levels]
         level_bar = self._level_bar_lines(current_z)
@@ -110,9 +102,7 @@ class TerminalRenderer:
             lines.append(f"{left:<28}  {middle:<28}  {right:<28}  {bar}")
 
         lines.append("")
-        lines.append(
-            "Legend: O=head  o=body  *=food  .=empty  gray panel=out-of-range slice"
-        )
+        lines.append("Legend: O=head  o=body  *=food  .=empty")
         lines.append("Controls: W/A/S/D move, R/F vertical, P pause, N restart, Q quit")
         if state.is_game_over:
             lines.append(

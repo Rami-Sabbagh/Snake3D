@@ -31,17 +31,12 @@ def step_state(
 
     direction = next_direction(state.direction, requested_direction)
     head = state.head
-    target = head.moved(direction)
-
-    if not config.contains(target):
-        return GameState(
-            board=state.board.copy(),
-            snake=deque(state.snake),
-            direction=direction,
-            food=state.food,
-            score=state.score,
-            is_game_over=True,
-        )
+    next_head = head.moved(direction)
+    target = Coord(
+        next_head.x % config.width,
+        next_head.y % config.height,
+        next_head.z % config.depth,
+    )
 
     grow = state.food == target
     blocked_segments = list(state.snake) if grow else list(state.snake)[:-1]
