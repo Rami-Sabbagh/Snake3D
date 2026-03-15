@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - web/**
+      - src/**
       - .github/workflows/deploy-pages.yml
   workflow_dispatch:
 
@@ -28,6 +29,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Prepare Pages artifact
+        run: |
+          cp -r src web/src
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
