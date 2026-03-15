@@ -4,7 +4,15 @@ import sys
 from dataclasses import dataclass
 from typing import TextIO
 
-from colorama import just_fix_windows_console
+try:
+    from colorama import just_fix_windows_console
+except (
+    ImportError
+):  # pragma: no cover - colorama may be unavailable in browser runtimes.
+
+    def just_fix_windows_console() -> None:
+        return None
+
 
 from snake3d.adapters.terminal_size import detect_terminal_size
 from snake3d.core.models import CellValue, Coord, GameConfig

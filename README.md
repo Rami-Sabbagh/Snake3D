@@ -31,3 +31,11 @@ Run the game:
 ```powershell
 poetry run snake3d
 ```
+
+Run the browser client (Pyodide + ANSI terminal emulator):
+
+```powershell
+poetry run snake3d-web
+```
+
+Then open `http://127.0.0.1:8000/web/index.html` if your browser does not open automatically.
