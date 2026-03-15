@@ -16,7 +16,7 @@ pytest = "^8.3.5"
 
 [tool.poetry.scripts]
 snake3d = "snake3d.__main__:main"
-snake3d-web = "snake3d.serve_web:main"
+
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
