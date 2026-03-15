@@ -17,6 +17,10 @@
 - Run tests with Poetry: `poetry run pytest`
 - Run the game entrypoint: `poetry run snake3d`
 
+## Git & Commit Policy
+- Do not perform automatic `git commit` operations from tooling or agents.
+- All commits must be manually reviewed and created by a developer.
+
 ## Conventions
 - Use Poetry for project workflows in this repository.
 - Keep [poetry.lock](poetry.lock) in version control when dependencies change.
