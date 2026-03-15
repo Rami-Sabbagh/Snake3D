@@ -1,9 +1,6 @@
-from __future__ import annotations
-
 import random
 from typing import Final
 
-from snake3d.adapters.terminal_input_windows import WindowsTerminalInput
 from snake3d.adapters.terminal_renderer import TerminalRenderer
 from snake3d.core.engine import Engine
 from snake3d.core.models import GameConfig
@@ -12,6 +9,10 @@ from snake3d.core.state import create_initial_state
 DEFAULT_GRID: Final[tuple[int, int, int]] = (8, 8, 8)
 DEFAULT_TICK_RATE_HZ: Final[float] = 6.0
 DEFAULT_FRUIT_COUNT: Final[int] = 3
+
+
+def _create_input_provider(config: GameConfig):
+    raise NotImplementedError()
 
 
 def _prompt_tick_rate() -> float:
@@ -92,7 +93,7 @@ def main() -> int:
     rng = random.Random()
     initial_state = create_initial_state(config, rng)
     renderer = TerminalRenderer(config, use_nerd_font=use_nerd_font)
-    input_provider = WindowsTerminalInput(config.controls)
+    input_provider = _create_input_provider(config)
     engine = Engine(
         config=config,
         state=initial_state,

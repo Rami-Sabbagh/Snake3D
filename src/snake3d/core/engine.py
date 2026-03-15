@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import time
 from random import Random
 from typing import Callable
@@ -116,6 +114,9 @@ class Engine:
 
                 self.sleep_fn(min(next_tick - now, 0.01))
         finally:
+            shutdown_input = getattr(self.input_provider, "shutdown", None)
+            if callable(shutdown_input):
+                shutdown_input()
             self.renderer.shutdown()
 
         return 0
