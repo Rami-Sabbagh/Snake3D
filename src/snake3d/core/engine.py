@@ -33,6 +33,7 @@ class Engine:
         self.clock = clock
         self.sleep_fn = sleep_fn
         self.pending_direction: Direction | None = None
+        self.pending_vertical_direction: Direction | None = None
         self.is_paused = False
         self.quit_requested = False
 
@@ -51,7 +52,16 @@ class Engine:
         if action.kind is InputActionType.RESTART:
             self.state = self.restart_factory()
             self.pending_direction = None
+            self.pending_vertical_direction = None
             self.is_paused = False
+            return
+
+        if (
+            action.kind is InputActionType.VERTICAL
+            and action.direction is not None
+            and self.pending_vertical_direction is None
+        ):
+            self.pending_vertical_direction = action.direction
             return
 
         if (
@@ -64,10 +74,21 @@ class Engine:
 
     def tick(self) -> GameState:
         if not self.is_paused and not self.state.is_game_over:
-            self.state = step_state(
-                self.state, self.config, self.pending_direction, self.rng
-            )
+            if self.pending_vertical_direction is not None:
+                previous_direction = self.state.direction
+                self.state = step_state(
+                    self.state,
+                    self.config,
+                    self.pending_vertical_direction,
+                    self.rng,
+                )
+                self.state.direction = previous_direction
+            else:
+                self.state = step_state(
+                    self.state, self.config, self.pending_direction, self.rng
+                )
         self.pending_direction = None
+        self.pending_vertical_direction = None
         self.renderer.render(self.state)
         return self.state
 

@@ -4,7 +4,7 @@ import random
 from collections import deque
 
 from snake3d.core.engine import Engine
-from snake3d.core.models import DOWN, RIGHT, UP, Coord, GameConfig
+from snake3d.core.models import ASCEND, DOWN, RIGHT, UP, Coord, GameConfig
 from snake3d.core.state import GameState, create_state
 from snake3d.ports.input import InputAction, InputActionType
 
@@ -109,3 +109,31 @@ def test_engine_handles_lifecycle_with_fake_adapters() -> None:
     assert renderer.shutdowns == 1
     assert renderer.frames[0] == (3, 3, 3)
     assert len(renderer.frames) >= 2
+
+
+def test_engine_vertical_move_is_one_shot_and_keeps_horizontal_direction() -> None:
+    config = GameConfig(width=8, height=8, depth=8, tick_rate_hz=5.0)
+    state = create_state(
+        config,
+        [Coord(3, 3, 3), Coord(2, 3, 3), Coord(1, 3, 3)],
+        RIGHT,
+        food=Coord(7, 7, 7),
+    )
+    clock = FakeClock()
+    renderer = FakeRenderer()
+    input_provider = FakeInputProvider([InputAction(InputActionType.VERTICAL, ASCEND)])
+    engine = Engine(
+        config=config,
+        state=state,
+        renderer=renderer,
+        input_provider=input_provider,
+        rng=random.Random(5),
+        restart_factory=lambda: state,
+        clock=clock,
+        sleep_fn=clock.sleep,
+    )
+
+    engine.run(max_ticks=1)
+
+    assert renderer.frames[-1] == (3, 3, 4)
+    assert engine.state.direction == RIGHT

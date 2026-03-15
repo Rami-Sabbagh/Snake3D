@@ -57,11 +57,21 @@ class TerminalRenderer:
             lines.append(" ".join(cells))
         return lines
 
-    def _level_bar_lines(self, current_z: int) -> list[str]:
+    def _level_bar_lines(self, state: GameState, current_z: int) -> list[str]:
+        fruit_count_by_level: dict[int, int] = {}
+        for food in state.foods:
+            fruit_count_by_level[food.z] = fruit_count_by_level.get(food.z, 0) + 1
+
         lines = ["levels"]
         for z_level in range(self.config.depth):
             marker = "#" if z_level == current_z else " "
-            lines.append(f"{z_level} |{marker}|")
+            fruit_count = fruit_count_by_level.get(z_level, 0)
+            fruit_marker = (
+                ""
+                if fruit_count == 0
+                else ("*" if fruit_count == 1 else f"*{fruit_count}")
+            )
+            lines.append(f"{z_level}|{marker}|{fruit_marker}")
         return lines
 
     def build_frame(self, state: GameState) -> str:
@@ -82,7 +92,7 @@ class TerminalRenderer:
             (current_z + 1) % self.config.depth,
         ]
         panels = [self._panel_lines(state, level) for level in panel_levels]
-        level_bar = self._level_bar_lines(current_z)
+        level_bar = self._level_bar_lines(state, current_z)
         row_count = max(len(level_bar), len(panels[0]), len(panels[1]), len(panels[2]))
 
         lines = [
@@ -99,14 +109,16 @@ class TerminalRenderer:
             middle = panels[1][row] if row < len(panels[1]) else ""
             right = panels[2][row] if row < len(panels[2]) else ""
             bar = level_bar[row] if row < len(level_bar) else ""
-            lines.append(f"{left:<28}  {middle:<28}  {right:<28}  {bar}")
+            lines.append(f"{left}  {middle}  {right}  {bar}")
 
         lines.append("")
         lines.append("Legend: O=head  o=body  *=food  .=empty")
-        lines.append("Controls: W/A/S/D move, R/F vertical, P pause, N restart, Q quit")
+        lines.append(
+            "Controls: W/A/S/D or arrows move, E/Q and X/Z shift level once, P pause, N restart, C or Esc quit"
+        )
         if state.is_game_over:
             lines.append(
-                f"{RED}{BOLD}GAME OVER{RESET}  Press N to restart or Q to quit."
+                f"{RED}{BOLD}GAME OVER{RESET}  Press N to restart or C/Esc to quit."
             )
         return "\n".join(lines)
 

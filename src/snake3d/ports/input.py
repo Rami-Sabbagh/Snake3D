@@ -9,6 +9,7 @@ from snake3d.core.models import Direction
 
 class InputActionType(Enum):
     DIRECTION = auto()
+    VERTICAL = auto()
     PAUSE = auto()
     RESTART = auto()
     QUIT = auto()

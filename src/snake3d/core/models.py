@@ -54,20 +54,26 @@ class ControlMapping:
     backward: str = "s"
     left: str = "a"
     right: str = "d"
-    ascend: str = "r"
-    descend: str = "f"
+    ascend: str = "e"
+    descend: str = "q"
     pause: str = "p"
     restart: str = "n"
-    quit: str = "q"
+    quit: str = "c"
 
-    def direction_by_key(self) -> Mapping[str, Direction]:
+    def horizontal_direction_by_key(self) -> Mapping[str, Direction]:
         return {
             self.forward: UP,
             self.backward: DOWN,
             self.left: LEFT,
             self.right: RIGHT,
+        }
+
+    def vertical_direction_by_key(self) -> Mapping[str, Direction]:
+        return {
             self.ascend: ASCEND,
             self.descend: DESCEND,
+            "x": ASCEND,
+            "z": DESCEND,
         }
 
 

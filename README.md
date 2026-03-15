@@ -4,12 +4,16 @@ Snake3D is a terminal 3D snake game with a NumPy-backed game core and a replacea
 
 ## Controls
 
-- `W` / `S`: move along the Y axis
-- `A` / `D`: move along the X axis
-- `R` / `F`: move up or down on the Z axis
+- `W` / `A` / `S` / `D` or arrow keys: move along X/Y axes
+- `E` / `Q` or `X` / `Z`: move up or down one level on the Z axis
 - `P`: pause or resume
 - `N`: restart
-- `Q`: quit
+- `C` or `Esc`: quit
+
+At startup, Snake3D prompts for:
+
+- Grid size in `WxHxD` format (default `8x8x8`)
+- Tick speed in ticks per second (default `6.0`)
 
 ## Development
 

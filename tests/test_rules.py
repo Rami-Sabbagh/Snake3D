@@ -6,7 +6,12 @@ import pytest
 
 from snake3d.core.models import ASCEND, DOWN, LEFT, RIGHT, UP, Coord, GameConfig
 from snake3d.core.rules import next_direction, step_state
-from snake3d.core.state import create_state, is_state_synchronized, spawn_food
+from snake3d.core.state import (
+    create_initial_state,
+    create_state,
+    is_state_synchronized,
+    spawn_food,
+)
 
 
 def test_next_direction_rejects_instant_reversal() -> None:
@@ -52,8 +57,10 @@ def test_step_state_grows_and_respawns_food_deterministically() -> None:
     assert next_state.head == Coord(2, 1, 1)
     assert len(next_state.snake) == 4
     assert next_state.score == 1
-    assert next_state.food == repeated_state.food
-    assert next_state.food not in next_state.snake
+    assert next_state.foods == repeated_state.foods
+    assert len(next_state.foods) == 3
+    for food in next_state.foods:
+        assert food not in next_state.snake
     assert is_state_synchronized(next_state, config)
 
 
@@ -110,3 +117,13 @@ def test_spawn_food_returns_none_when_board_is_full() -> None:
     snake = [Coord(x, y, z) for z in range(4) for y in range(4) for x in range(4)]
 
     assert spawn_food(config, snake, random.Random(2)) is None
+
+
+def test_create_initial_state_spawns_three_food_items() -> None:
+    config = GameConfig(width=8, height=8, depth=8)
+
+    state = create_initial_state(config, random.Random(3))
+
+    assert len(state.foods) == 3
+    for food in state.foods:
+        assert food not in state.snake
