@@ -293,7 +293,7 @@
 
         async function mountSourceFiles(pyodideInstance) {
             for (const path of SOURCE_FILES) {
-                const response = await fetch(`/${path}`);
+                const response = await fetch(`./${path}`);
                 if (!response.ok) {
                     throw new Error(`Failed to fetch ${path}: ${response.status}`);
                 }
