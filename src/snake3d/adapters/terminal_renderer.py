@@ -23,6 +23,12 @@ DIM = "\x1b[2m"
 GREEN = "\x1b[32m"
 BRIGHT_GREEN = "\x1b[92m"
 RED = "\x1b[31m"
+YELLOW = "\x1b[33m"
+BLUE = "\x1b[34m"
+CYAN = "\x1b[36m"
+BRIGHT_BLACK = "\x1b[90m"
+BRIGHT_YELLOW = "\x1b[93m"
+BRIGHT_CYAN = "\x1b[96m"
 BOLD = "\x1b[1m"
 HIDE_CURSOR = "\x1b[?25l"
 SHOW_CURSOR = "\x1b[?25h"
@@ -37,10 +43,29 @@ class GlyphSet:
     body: str
     food: str
     empty: str
+    depth_current: str
+    depth_food: str
+    depth_empty: str
 
 
-ASCII_GLYPHS = GlyphSet(head="O", body="o", food="@", empty=".")
-NERD_FONT_GLYPHS = GlyphSet(head="󰍉", body="󰝤", food="󰭆", empty="·")
+ASCII_GLYPHS = GlyphSet(
+    head="O",
+    body="o",
+    food="@",
+    empty=".",
+    depth_current=">",
+    depth_food="*",
+    depth_empty=":",
+)
+NERD_FONT_GLYPHS = GlyphSet(
+    head="󰍉",
+    body="󰝤",
+    food="󰭆",
+    empty="·",
+    depth_current="",
+    depth_food="󰓣",
+    depth_empty="",
+)
 
 
 class TerminalRenderer:
@@ -62,6 +87,15 @@ class TerminalRenderer:
         self.stream.flush()
         self._initialized = True
 
+    def _style(self, text: object, *codes: str) -> str:
+        return f"{''.join(codes)}{text}{RESET}"
+
+    def _format_stat(self, label: str, value: object, color: str) -> str:
+        return f"{label}={self._style(value, BOLD, color)}"
+
+    def _format_key(self, text: str) -> str:
+        return self._style(text, BOLD, YELLOW)
+
     def _render_cell(self, coord: Coord, state: GameState) -> str:
         cell = CellValue(int(state.board[board_index(coord)]))
         if cell is CellValue.HEAD:
@@ -72,11 +106,13 @@ class TerminalRenderer:
             return f"{RED}{self.glyphs.food}{RESET}"
         return f"{DIM}{self.glyphs.empty}{RESET}"
 
-    def _panel_label(self, z_level: int) -> str:
-        return f"z={z_level}"
+    def _panel_label(self, z_level: int, current_z: int) -> str:
+        if z_level == current_z:
+            return self._style(f"z={z_level}", BOLD, BRIGHT_CYAN)
+        return self._style(f"z={z_level}", DIM, CYAN)
 
-    def _panel_lines(self, state: GameState, z_level: int) -> list[str]:
-        lines = [self._panel_label(z_level)]
+    def _panel_lines(self, state: GameState, z_level: int, current_z: int) -> list[str]:
+        lines = [self._panel_label(z_level, current_z)]
         for y in range(self.config.height):
             cells = [
                 self._render_cell(Coord(x, y, z_level), state)
@@ -90,14 +126,14 @@ class TerminalRenderer:
         for food in state.foods:
             fruit_levels.add(food.z)
 
-        lines = ["levels"]
+        lines = [self._style("depth", DIM, BLUE)]
         for z_level in range(self.config.depth):
-            marker = (
-                "#"
-                if z_level == current_z
-                else ("@" if z_level in fruit_levels else " ")
-            )
-            lines.append(f"{z_level}|{marker}|")
+            if z_level == current_z:
+                lines.append(self._style(self.glyphs.depth_current, BOLD, BRIGHT_CYAN))
+            elif z_level in fruit_levels:
+                lines.append(self._style(self.glyphs.depth_food, BOLD, RED))
+            else:
+                lines.append(self._style(self.glyphs.depth_empty, BRIGHT_BLACK))
         return lines
 
     def build_frame(self, state: GameState) -> str:
@@ -117,15 +153,17 @@ class TerminalRenderer:
             current_z,
             (current_z + 1) % self.config.depth,
         ]
-        panels = [self._panel_lines(state, level) for level in panel_levels]
+        panels = [self._panel_lines(state, level, current_z) for level in panel_levels]
         level_bar = self._level_bar_lines(state, current_z)
         row_count = max(len(level_bar), len(panels[0]), len(panels[1]), len(panels[2]))
 
         lines = [
             (
-                f"{BOLD}Snake3D{RESET}  score={state.score:02d}  "
-                f"dir={state.direction.as_tuple()}  head={state.head.as_tuple()}  "
-                f"grid={self.config.width}x{self.config.height}x{self.config.depth}"
+                f"{BOLD}Snake3D{RESET}  "
+                f"{self._format_stat('score', f'{state.score:02d}', BRIGHT_YELLOW)}  "
+                f"{self._format_stat('dir', state.direction.as_tuple(), CYAN)}  "
+                f"{self._format_stat('head', state.head.as_tuple(), BRIGHT_GREEN)}  "
+                f"{self._format_stat('grid', f'{self.config.width}x{self.config.height}x{self.config.depth}', BLUE)}"
             ),
             "",
         ]
@@ -142,7 +180,11 @@ class TerminalRenderer:
             f"Legend: {self.glyphs.head}=head  {self.glyphs.body}=body  {self.glyphs.food}=food  {self.glyphs.empty}=empty"
         )
         lines.append(
-            "Controls: W/A/S/D or arrows move, E/Q and X/Z shift level once, P pause, N restart, C or Esc quit"
+            "Controls: "
+            f"{self._format_key('W/A/S/D')} or {self._format_key('arrows')} move, "
+            f"{self._format_key('E/Q')} and {self._format_key('X/Z')} shift level once, "
+            f"{self._format_key('P')} pause, {self._format_key('N')} restart, "
+            f"{self._format_key('C')} or {self._format_key('Esc')} quit"
         )
         if state.is_game_over:
             lines.append(

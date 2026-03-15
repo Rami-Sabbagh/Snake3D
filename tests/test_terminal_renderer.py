@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from io import StringIO
 
 from snake3d.adapters.terminal_renderer import (
@@ -12,6 +13,13 @@ from snake3d.core.models import Coord, GameConfig, RIGHT
 from snake3d.core.state import create_state
 
 
+ANSI_PATTERN = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
+
+
+def strip_ansi(text: str) -> str:
+    return ANSI_PATTERN.sub("", text)
+
+
 def test_renderer_shows_three_slice_window_and_level_bar() -> None:
     config = GameConfig(width=8, height=8, depth=8)
     state = create_state(
@@ -22,15 +30,17 @@ def test_renderer_shows_three_slice_window_and_level_bar() -> None:
     )
     renderer = TerminalRenderer(config, stream=StringIO())
 
-    frame = renderer.build_frame(state)
+    frame = strip_ansi(renderer.build_frame(state))
 
     assert "z=4" in frame
     assert "z=5" in frame
     assert "z=6" in frame
     assert "z=3" not in frame
-    assert "5|#|" in frame
-    assert "2|@|" in frame
-    assert "7|@|" in frame
+    assert frame.count(">") == 1
+    assert frame.count("*") >= 2
+    assert "5|#|" not in frame
+    assert "2|@|" not in frame
+    assert "7|@|" not in frame
     assert "score=" in frame
     assert "Snake3D" in frame
 
@@ -45,13 +55,13 @@ def test_renderer_wraps_adjacent_panels_at_depth_edges() -> None:
     )
     renderer = TerminalRenderer(config, stream=StringIO())
 
-    frame = renderer.build_frame(state)
+    frame = strip_ansi(renderer.build_frame(state))
 
     assert "z=7" in frame
     assert "z=0" in frame
     assert "z=1" in frame
     assert "z=--" not in frame
-    assert "0|#|" in frame
+    assert frame.count(">") == 1
 
 
 def test_renderer_uses_at_sign_for_food_with_default_glyphs() -> None:
@@ -64,9 +74,26 @@ def test_renderer_uses_at_sign_for_food_with_default_glyphs() -> None:
     )
     renderer = TerminalRenderer(config, stream=StringIO())
 
-    frame = renderer.build_frame(state)
+    frame = strip_ansi(renderer.build_frame(state))
 
     assert "@=food" in frame
+
+
+def test_renderer_uses_nerd_font_depth_indicator_when_enabled() -> None:
+    config = GameConfig(width=8, height=8, depth=8)
+    state = create_state(
+        config,
+        [Coord(3, 3, 3), Coord(2, 3, 3), Coord(1, 3, 3)],
+        RIGHT,
+        foods=(Coord(5, 5, 5), Coord(1, 1, 7)),
+    )
+    renderer = TerminalRenderer(config, stream=StringIO(), use_nerd_font=True)
+
+    frame = strip_ansi(renderer.build_frame(state))
+
+    assert "󰍉=head" in frame
+    assert "" in frame
+    assert "󰓣" in frame
 
 
 def test_renderer_writes_terminal_control_sequences_on_render_and_shutdown() -> None:
