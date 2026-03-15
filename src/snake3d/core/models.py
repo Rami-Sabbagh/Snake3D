@@ -83,6 +83,7 @@ class GameConfig:
     height: int = 8
     depth: int = 8
     tick_rate_hz: float = 6.0
+    fruit_count: int = 3
     controls: ControlMapping = field(default_factory=ControlMapping)
 
     def __post_init__(self) -> None:
@@ -90,6 +91,8 @@ class GameConfig:
             raise ValueError("All board dimensions must be at least 4.")
         if self.tick_rate_hz <= 0:
             raise ValueError("tick_rate_hz must be positive.")
+        if self.fruit_count < 1:
+            raise ValueError("fruit_count must be at least 1.")
 
     @property
     def board_shape(self) -> tuple[int, int, int]:

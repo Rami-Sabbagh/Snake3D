@@ -114,7 +114,7 @@ def create_initial_state(config: GameConfig, rng: Random) -> GameState:
             Coord(head.x - 2, head.y, head.z),
         ]
     )
-    foods = spawn_foods(config, snake, rng, 3)
+    foods = spawn_foods(config, snake, rng, config.fruit_count)
     return create_state(config, snake, RIGHT, foods=foods)
 
 

@@ -58,7 +58,7 @@ def test_step_state_grows_and_respawns_food_deterministically() -> None:
     assert len(next_state.snake) == 4
     assert next_state.score == 1
     assert next_state.foods == repeated_state.foods
-    assert len(next_state.foods) == 3
+    assert len(next_state.foods) == config.fruit_count
     for food in next_state.foods:
         assert food not in next_state.snake
     assert is_state_synchronized(next_state, config)
@@ -119,11 +119,11 @@ def test_spawn_food_returns_none_when_board_is_full() -> None:
     assert spawn_food(config, snake, random.Random(2)) is None
 
 
-def test_create_initial_state_spawns_three_food_items() -> None:
-    config = GameConfig(width=8, height=8, depth=8)
+def test_create_initial_state_spawns_configured_fruit_items() -> None:
+    config = GameConfig(width=8, height=8, depth=8, fruit_count=5)
 
     state = create_initial_state(config, random.Random(3))
 
-    assert len(state.foods) == 3
+    assert len(state.foods) == config.fruit_count
     for food in state.foods:
         assert food not in state.snake

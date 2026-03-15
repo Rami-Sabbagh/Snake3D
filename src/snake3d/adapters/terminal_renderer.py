@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import dataclass
 from typing import TextIO
 
 from colorama import just_fix_windows_console
@@ -22,10 +23,29 @@ CLEAR = "\x1b[2J"
 CLEAR_TO_END = "\x1b[J"
 
 
+@dataclass(frozen=True, slots=True)
+class GlyphSet:
+    head: str
+    body: str
+    food: str
+    empty: str
+
+
+ASCII_GLYPHS = GlyphSet(head="O", body="o", food="@", empty=".")
+NERD_FONT_GLYPHS = GlyphSet(head="󰍉", body="󰝤", food="󰭆", empty="·")
+
+
 class TerminalRenderer:
-    def __init__(self, config: GameConfig, stream: TextIO | None = None) -> None:
+    def __init__(
+        self,
+        config: GameConfig,
+        stream: TextIO | None = None,
+        *,
+        use_nerd_font: bool = False,
+    ) -> None:
         self.config = config
         self.stream = stream if stream is not None else sys.stdout
+        self.glyphs = NERD_FONT_GLYPHS if use_nerd_font else ASCII_GLYPHS
         self._initialized = False
 
     def initialize(self) -> None:
@@ -37,12 +57,12 @@ class TerminalRenderer:
     def _render_cell(self, coord: Coord, state: GameState) -> str:
         cell = CellValue(int(state.board[board_index(coord)]))
         if cell is CellValue.HEAD:
-            return f"{BRIGHT_GREEN}O{RESET}"
+            return f"{BRIGHT_GREEN}{self.glyphs.head}{RESET}"
         if cell is CellValue.BODY:
-            return f"{GREEN}o{RESET}"
+            return f"{GREEN}{self.glyphs.body}{RESET}"
         if cell is CellValue.FOOD:
-            return f"{RED}*{RESET}"
-        return f"{DIM}.{RESET}"
+            return f"{RED}{self.glyphs.food}{RESET}"
+        return f"{DIM}{self.glyphs.empty}{RESET}"
 
     def _panel_label(self, z_level: int) -> str:
         return f"z={z_level}"
@@ -58,20 +78,18 @@ class TerminalRenderer:
         return lines
 
     def _level_bar_lines(self, state: GameState, current_z: int) -> list[str]:
-        fruit_count_by_level: dict[int, int] = {}
+        fruit_levels: set[int] = set()
         for food in state.foods:
-            fruit_count_by_level[food.z] = fruit_count_by_level.get(food.z, 0) + 1
+            fruit_levels.add(food.z)
 
         lines = ["levels"]
         for z_level in range(self.config.depth):
-            marker = "#" if z_level == current_z else " "
-            fruit_count = fruit_count_by_level.get(z_level, 0)
-            fruit_marker = (
-                ""
-                if fruit_count == 0
-                else ("*" if fruit_count == 1 else f"*{fruit_count}")
+            marker = (
+                "#"
+                if z_level == current_z
+                else ("@" if z_level in fruit_levels else " ")
             )
-            lines.append(f"{z_level}|{marker}|{fruit_marker}")
+            lines.append(f"{z_level}|{marker}|")
         return lines
 
     def build_frame(self, state: GameState) -> str:
@@ -112,7 +130,9 @@ class TerminalRenderer:
             lines.append(f"{left}  {middle}  {right}  {bar}")
 
         lines.append("")
-        lines.append("Legend: O=head  o=body  *=food  .=empty")
+        lines.append(
+            f"Legend: {self.glyphs.head}=head  {self.glyphs.body}=body  {self.glyphs.food}=food  {self.glyphs.empty}=empty"
+        )
         lines.append(
             "Controls: W/A/S/D or arrows move, E/Q and X/Z shift level once, P pause, N restart, C or Esc quit"
         )

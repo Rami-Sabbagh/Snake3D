@@ -28,9 +28,10 @@ def test_renderer_shows_three_slice_window_and_level_bar() -> None:
     assert "z=5" in frame
     assert "z=6" in frame
     assert "z=3" not in frame
-    assert "5|#|*" in frame
-    assert "2| |*" in frame
-    assert "7| |*" in frame
+    assert "5|#|" in frame
+    assert "2|@|" in frame
+    assert "7|@|" in frame
+    assert "score=" in frame
     assert "Snake3D" in frame
 
 
@@ -50,7 +51,22 @@ def test_renderer_wraps_adjacent_panels_at_depth_edges() -> None:
     assert "z=0" in frame
     assert "z=1" in frame
     assert "z=--" not in frame
-    assert "0|#|*" in frame
+    assert "0|#|" in frame
+
+
+def test_renderer_uses_at_sign_for_food_with_default_glyphs() -> None:
+    config = GameConfig(width=8, height=8, depth=8)
+    state = create_state(
+        config,
+        [Coord(3, 3, 3), Coord(2, 3, 3), Coord(1, 3, 3)],
+        RIGHT,
+        food=Coord(5, 5, 5),
+    )
+    renderer = TerminalRenderer(config, stream=StringIO())
+
+    frame = renderer.build_frame(state)
+
+    assert "@=food" in frame
 
 
 def test_renderer_writes_terminal_control_sequences_on_render_and_shutdown() -> None:

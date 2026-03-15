@@ -67,7 +67,9 @@ def step_state(
         board[board_index(tail)] = CellValue.EMPTY
 
     if grow:
-        foods = list(spawn_foods(config, snake, rng, 3, existing=foods))
+        foods = list(
+            spawn_foods(config, snake, rng, config.fruit_count, existing=foods)
+        )
 
     for food in foods:
         board[board_index(food)] = CellValue.FOOD

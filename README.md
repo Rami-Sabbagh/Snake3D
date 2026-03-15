@@ -14,6 +14,8 @@ At startup, Snake3D prompts for:
 
 - Grid size in `WxHxD` format (default `8x8x8`)
 - Tick speed in ticks per second (default `6.0`)
+- Fruit count (default `3`)
+- Whether to enable NerdFont fancy glyphs for rendering
 
 ## Development
 
