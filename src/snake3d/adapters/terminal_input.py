@@ -1,9 +1,8 @@
 """Terminal input provider using xterm escape sequences."""
 
+import os
 import select
 import sys
-import termios
-import tty
 from collections.abc import Mapping
 from typing import Any, TextIO
 
@@ -28,6 +27,8 @@ class TerminalInputProvider:
         self.config = config
         self.input_stream = input_stream
         self._original_terminal_settings: Any = None
+        self._has_termios: bool = False
+        self._set_non_blocking: bool = False
         self._initialize_terminal()
 
         # Build key mappings
@@ -43,11 +44,30 @@ class TerminalInputProvider:
         }
 
     def _initialize_terminal(self) -> None:
-        """Set terminal to raw mode for character-by-character input."""
+        """Set terminal to raw mode for character-by-character input.
+
+        When termios is available (standard POSIX terminals), sets raw mode.
+        In Pyodide/browser environments without termios, sets non-blocking I/O
+        via os.set_blocking so that poll_action never blocks the game loop.
+        """
         if not self.input_stream.isatty():
             return
 
         fd = self.input_stream.fileno()
+        try:
+            import termios
+            import tty
+
+            self._has_termios = True
+        except ImportError:
+            # Pyodide: termios/tty unavailable, fall back to non-blocking I/O.
+            try:
+                os.set_blocking(fd, False)
+                self._set_non_blocking = True
+            except OSError:
+                pass
+            return
+
         try:
             self._original_terminal_settings = termios.tcgetattr(fd)
             tty.setraw(fd)
@@ -67,28 +87,50 @@ class TerminalInputProvider:
                 return ""
 
         fd = self.input_stream.fileno()
-        chars: list[str] = []
 
-        # Use select to check if input is available
-        while True:
-            readable, _, _ = select.select([fd], [], [], 0)
-            if not readable:
-                break
+        if self._has_termios:
+            # Standard POSIX: use select for non-blocking poll
+            chars: list[str] = []
 
+            # Use select to check if input is available
+            while True:
+                readable, _, _ = select.select([fd], [], [], 0)
+                if not readable:
+                    break
+
+                try:
+                    char = self.input_stream.read(1)
+                    if not char:
+                        break
+                    chars.append(char)
+
+                    # For escape sequences, try to read the full sequence
+                    # Most xterm sequences are 3 characters like \x1b[A
+                    if char == "\x1b" and len(chars) < 3:
+                        continue
+                except OSError:
+                    break
+
+            return "".join(chars)
+        else:
+            # Pyodide: fd is non-blocking; read raises BlockingIOError when idle
             try:
                 char = self.input_stream.read(1)
                 if not char:
-                    break
-                chars.append(char)
-
-                # For escape sequences, try to read the full sequence
-                # Most xterm sequences are 3 characters like \x1b[A
-                if char == "\x1b" and len(chars) < 3:
-                    continue
-            except OSError:
-                break
-
-        return "".join(chars)
+                    return ""
+                chars = [char]
+                # For escape sequences, try to read the remaining 2 characters
+                # (e.g. xterm arrow keys arrive as \x1b[A)
+                if char == "\x1b":
+                    try:
+                        rest = self.input_stream.read(2)
+                        if rest:
+                            chars.append(rest)
+                    except (BlockingIOError, OSError, ValueError):
+                        pass
+                return "".join(chars)
+            except (BlockingIOError, OSError, ValueError):
+                return ""
 
     def poll_action(self) -> InputAction | None:
         """Poll for input and return the corresponding action."""
@@ -130,11 +172,17 @@ class TerminalInputProvider:
 
     def shutdown(self) -> None:
         """Restore terminal to original settings."""
-        if self._original_terminal_settings is None:
-            return
+        if self._has_termios and self._original_terminal_settings is not None:
+            import termios
 
-        fd = self.input_stream.fileno()
-        try:
-            termios.tcsetattr(fd, termios.TCSADRAIN, self._original_terminal_settings)
-        except (termios.error, OSError):
-            pass
+            fd = self.input_stream.fileno()
+            try:
+                termios.tcsetattr(fd, termios.TCSADRAIN, self._original_terminal_settings)
+            except (termios.error, OSError):
+                pass
+        elif self._set_non_blocking:
+            try:
+                fd = self.input_stream.fileno()
+                os.set_blocking(fd, True)
+            except OSError:
+                pass
