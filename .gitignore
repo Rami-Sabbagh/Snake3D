@@ -2,3 +2,6 @@
 __pycache__/
 .pytest_cache/
 *.pyc
+/dist/*
+!/dist/index.html
+!/dist/mini-coi.js
