@@ -1,17 +1,17 @@
 from collections import deque
+from collections.abc import Iterable
 from dataclasses import dataclass
 from random import Random
-from typing import Deque, Iterable
 
 import numpy as np
 
-from snake3d.core.models import CellValue, Coord, Direction, GameConfig, RIGHT
+from snake3d.core.models import RIGHT, CellValue, Coord, Direction, GameConfig
 
 
 @dataclass(slots=True)
 class GameState:
     board: np.ndarray
-    snake: Deque[Coord]
+    snake: deque[Coord]
     direction: Direction
     foods: tuple[Coord, ...]
     score: int = 0
@@ -66,9 +66,7 @@ def spawn_foods(
     return tuple(foods)
 
 
-def build_board(
-    config: GameConfig, snake: Iterable[Coord], foods: Iterable[Coord]
-) -> np.ndarray:
+def build_board(config: GameConfig, snake: Iterable[Coord], foods: Iterable[Coord]) -> np.ndarray:
     board = np.full(config.board_shape, CellValue.EMPTY, dtype=np.int8)
     snake_list = list(snake)
     for segment in snake_list[1:]:
@@ -90,7 +88,7 @@ def create_state(
     score: int = 0,
     is_game_over: bool = False,
 ) -> GameState:
-    snake_deque: Deque[Coord] = deque(snake)
+    snake_deque: deque[Coord] = deque(snake)
     resolved_foods = tuple(foods) if foods is not None else ((food,) if food else ())
     board = build_board(config, snake_deque, resolved_foods)
     return GameState(

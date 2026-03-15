@@ -13,6 +13,8 @@ colorama = "^0.4.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
+ruff = "^0.11.0"
+mypy = "^1.15.0"
 
 [tool.poetry.scripts]
 snake3d = "snake3d.__main__:main"
@@ -21,6 +23,29 @@ snake3d = "snake3d.__main__:main"
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.14"
+mypy_path = "src"
+packages = ["snake3d"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+check_untyped_defs = true
+no_implicit_optional = true
+pretty = true
 
 [build-system]
 requires = ["poetry-core>=1.9.0"]

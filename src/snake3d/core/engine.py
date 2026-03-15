@@ -1,6 +1,6 @@
 import time
+from collections.abc import Callable
 from random import Random
-from typing import Callable
 
 from snake3d.core.models import Direction, GameConfig
 from snake3d.core.rules import step_state
@@ -82,9 +82,7 @@ class Engine:
                 )
                 self.state.direction = previous_direction
             else:
-                self.state = step_state(
-                    self.state, self.config, self.pending_direction, self.rng
-                )
+                self.state = step_state(self.state, self.config, self.pending_direction, self.rng)
         self.pending_direction = None
         self.pending_vertical_direction = None
         self.renderer.render(self.state)

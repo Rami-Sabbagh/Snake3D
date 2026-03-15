@@ -1,6 +1,6 @@
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Mapping
 
 
 class CellValue(IntEnum):
@@ -17,9 +17,7 @@ class Coord:
     z: int
 
     def moved(self, direction: Direction) -> Coord:
-        return Coord(
-            self.x + direction.dx, self.y + direction.dy, self.z + direction.dz
-        )
+        return Coord(self.x + direction.dx, self.y + direction.dy, self.z + direction.dz)
 
     def as_tuple(self) -> tuple[int, int, int]:
         return (self.x, self.y, self.z)
@@ -98,9 +96,7 @@ class GameConfig:
 
     def contains(self, coord: Coord) -> bool:
         return (
-            0 <= coord.x < self.width
-            and 0 <= coord.y < self.height
-            and 0 <= coord.z < self.depth
+            0 <= coord.x < self.width and 0 <= coord.y < self.height and 0 <= coord.z < self.depth
         )
 
     def center(self) -> Coord:

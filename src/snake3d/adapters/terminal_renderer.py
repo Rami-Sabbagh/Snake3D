@@ -128,9 +128,11 @@ class TerminalRenderer:
         minimum_columns = (self.config.width * 2 - 1) * 3 + 20
         minimum_lines = self.config.height + 5
         if size.columns < minimum_columns or size.lines < minimum_lines:
+            detected_size = f"{size.columns}x{size.lines}"
             return (
                 f"{BOLD}Snake3D{RESET} terminal too small\n"
-                f"Need at least {minimum_columns}x{minimum_lines}, detected {size.columns}x{size.lines}.\n"
+                f"Need at least {minimum_columns}x{minimum_lines}, "
+                f"detected {detected_size}.\n"
                 "Resize the terminal and restart or continue with a larger window."
             )
 
@@ -144,13 +146,14 @@ class TerminalRenderer:
         level_bar = self._level_bar_lines(state, current_z)
         row_count = max(len(level_bar), len(panels[0]), len(panels[1]), len(panels[2]))
 
+        grid_size = f"{self.config.width}x{self.config.height}x{self.config.depth}"
         lines = [
             (
                 f"{BOLD}Snake3D{RESET}  "
                 f"{self._format_stat('score', f'{state.score:02d}', BRIGHT_YELLOW)}  "
                 f"{self._format_stat('dir', state.direction.as_tuple(), CYAN)}  "
                 f"{self._format_stat('head', state.head.as_tuple(), BRIGHT_GREEN)}  "
-                f"{self._format_stat('grid', f'{self.config.width}x{self.config.height}x{self.config.depth}', BLUE)}"
+                f"{self._format_stat('grid', grid_size, BLUE)}"
             ),
             "",
         ]
@@ -163,9 +166,11 @@ class TerminalRenderer:
             lines.append(f"{left}  {middle}  {right}  {bar}")
 
         lines.append("")
-        lines.append(
-            f"Legend: {self.glyphs.head}=head  {self.glyphs.body}=body  {self.glyphs.food}=food  {self.glyphs.empty}=empty"
+        legend = (
+            f"Legend: {self.glyphs.head}=head  {self.glyphs.body}=body  "
+            f"{self.glyphs.food}=food  {self.glyphs.empty}=empty"
         )
+        lines.append(legend)
         lines.append(
             "Controls: "
             f"{self._format_key('W/A/S/D')} or {self._format_key('arrows')} move, "

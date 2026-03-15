@@ -4,14 +4,13 @@ import re
 from io import StringIO
 
 from snake3d.adapters.terminal_renderer import (
-    HOME,
     HIDE_CURSOR,
+    HOME,
     SHOW_CURSOR,
     TerminalRenderer,
 )
-from snake3d.core.models import Coord, GameConfig, RIGHT
+from snake3d.core.models import RIGHT, Coord, GameConfig
 from snake3d.core.state import create_state
-
 
 ANSI_PATTERN = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
 
