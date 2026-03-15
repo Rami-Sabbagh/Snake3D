@@ -16,7 +16,7 @@ class Coord:
     y: int
     z: int
 
-    def moved(self, direction: Direction) -> Coord:
+    def moved(self, direction: "Direction") -> "Coord":
         return Coord(self.x + direction.dx, self.y + direction.dy, self.z + direction.dz)
 
     def as_tuple(self) -> tuple[int, int, int]:
@@ -29,7 +29,7 @@ class Direction:
     dy: int
     dz: int
 
-    def is_opposite(self, other: Direction) -> bool:
+    def is_opposite(self, other: "Direction") -> bool:
         return (self.dx, self.dy, self.dz) == (-other.dx, -other.dy, -other.dz)
 
     def as_tuple(self) -> tuple[int, int, int]:

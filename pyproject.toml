@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{ include = "snake3d", from = "src" }]
 
 [tool.poetry.dependencies]
-python = ">=3.14,<3.15"
+python = ">=3.12,<3.15"
 numpy = "^2.2.0"
 colorama = "^0.4.6"
 
@@ -25,7 +25,7 @@ pythonpath = ["src"]
 testpaths = ["tests"]
 
 [tool.ruff]
-target-version = "py314"
+target-version = "py312"
 line-length = 100
 src = ["src", "tests"]
 
@@ -37,7 +37,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.12"
 mypy_path = "src"
 packages = ["snake3d"]
 warn_unused_ignores = true
