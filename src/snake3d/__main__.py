@@ -1,6 +1,7 @@
 import random
 from typing import Final
 
+from snake3d.adapters.terminal_input import TerminalInputProvider
 from snake3d.adapters.terminal_renderer import TerminalRenderer
 from snake3d.core.engine import Engine
 from snake3d.core.models import GameConfig
@@ -12,7 +13,7 @@ DEFAULT_FRUIT_COUNT: Final[int] = 3
 
 
 def _create_input_provider(config: GameConfig):
-    raise NotImplementedError()
+    return TerminalInputProvider(config)
 
 
 def _prompt_tick_rate() -> float:

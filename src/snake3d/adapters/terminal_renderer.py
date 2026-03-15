@@ -102,8 +102,7 @@ class TerminalRenderer:
         lines = [self._panel_label(z_level, current_z)]
         for y in range(self.config.height):
             cells = [
-                self._render_cell(Coord(x, y, z_level), state)
-                for x in range(self.config.width)
+                self._render_cell(Coord(x, y, z_level), state) for x in range(self.config.width)
             ]
             lines.append(" ".join(cells))
         return lines
@@ -179,9 +178,7 @@ class TerminalRenderer:
             f"{self._format_key('C')} or {self._format_key('Esc')} quit"
         )
         if state.is_game_over:
-            lines.append(
-                f"{RED}{BOLD}GAME OVER{RESET}  Press N to restart or C/Esc to quit."
-            )
+            lines.append(f"{RED}{BOLD}GAME OVER{RESET}  Press N to restart or C/Esc to quit.")
         return "\n".join(lines)
 
     def render(self, state: GameState) -> None:
