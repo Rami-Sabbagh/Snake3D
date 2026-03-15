@@ -1,5 +1,5 @@
 ---
-name: "Snake3D Refactor"
+name: "Full Refactor"
 description: "Use when refactoring Snake3D across the repository, including core logic, adapters, ports, startup wiring, tests, or documentation, while preserving behavior and the project's Poetry workflow."
 tools: [read, edit, search, execute]
 argument-hint: "Describe the repo refactor, scope, files or subsystems involved, and any behavior that must stay unchanged."

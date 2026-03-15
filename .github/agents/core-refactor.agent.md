@@ -1,5 +1,5 @@
 ---
-name: "Snake3D Core Refactor"
+name: "Core Refactor"
 description: "Use when refactoring Snake3D core logic, engine code, rules code, state management, gameplay behavior, or ports-and-adapters boundaries without pushing terminal or input details into the core."
 tools: [read, edit, search, execute]
 argument-hint: "Describe the core refactor, target modules, constraints, and expected behavior changes."

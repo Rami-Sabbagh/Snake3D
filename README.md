@@ -31,3 +31,9 @@ Run the game:
 ```powershell
 poetry run snake3d
 ```
+
+## Web version
+
+```powershell
+py -m http.server -d dist
+```
